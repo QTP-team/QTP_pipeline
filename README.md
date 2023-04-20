@@ -32,7 +32,7 @@ prodigal -c -m -p single -i genome.fa -a gene.faa > /dev/null
 
 ### 7.2 Gene de-redundancy
 ```
-sh mmseq2_clust.sh library_ID input.fasta 0.9 output_dir 32 > log
+sh script/mmseq2_clust.sh library_ID input.fasta 0.9 output_dir 32 > log
 ```
 
 ## 8. Calculate pN/pS
@@ -48,10 +48,10 @@ orthofinder -f Sequence/ -s diamond -t 20
 
 ## 10. Calculate Ka/Ks
 ```
-ParaAT.pl -h Orthogroups.txt -n Orthogroup_Sequences.fna -a Orthogroup_Sequences.faa -p proc -f axt -g -k -c 11 -o Ka_Ks_results
+perl script/ParaAT.pl -h Orthogroups.txt -n Orthogroup_Sequences.fna -a Orthogroup_Sequences.faa -p proc -f axt -g -k -c 11 -o Ka_Ks_results
 ```
 
 ## 11. Reconciles host and symbiont phylogenies
 ```
-python AnGST.py Sample.input 1>sample.o 2>sample.e
+python script/AnGST.py Sample.input 1>sample.o 2>sample.e
 ```
