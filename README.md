@@ -60,3 +60,18 @@ mmseqs convert2fasta $rep_dir/${library_ID}_clust_${identity}_rep $output_dir/${
 bowtie2 -p 8 -x genome_index -1 sample.1.fq.gz -2 sample.2.fq.gz 2> logs/sample.log | samtools view -S -@ 8 -b > sample.bam
 inStrain profile sample.bam genome.fa -o sample.IS -p 8 -l 0.95 -c 4 -f 0.01 -g genome.gene.fna -s genome.stb
 ```
+
+## 9. Calculate Orthogroup Sequences
+```
+orthofinder -f Sequence/ -s diamond -t 20
+```
+
+## 10. Calculate Ka/Ks
+```
+ParaAT.pl -h Orthogroups.txt -n Orthogroup_Sequences.fna -a Orthogroup_Sequences.faa -p proc -f axt -g -k -c 11 -o Ka_Ks_results
+```
+
+## 11. Reconciles host and symbiont phylogenies
+```
+python AnGST.py Sample.input 1>sample.o 2>sample.e
+```
