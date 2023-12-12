@@ -1,6 +1,54 @@
 # QTP pipeline
-## 1. Assemble (https://github.com/QTP-team/meta_assemble)
+## 1. Assemble
+### MAGScoT
+#### bowtie2 (bowtie2 v2.5.1)
+```
+seqkit seq -m 1500 {sample_contig} > {sample_contig_filter}
+bowtie2-build {sample_contig_filter} {sample_contig_index} 1> {sample_bowtie2_index.log}
+bowtie2 -p 8 -x {sample_contig_index} -1 {sample.rmhost.1.fq.gz} -2 {sample.rmhost.2.fq.gz} > {smaple.sam}
+samtools sort -@ 8 {sample.sam} -O BAM > {sample.bam}
+samtools index {sample.bam} {smaple.bam.bai}
+```
 
+#### concoct (concoct v1.1.0) 
+```
+cut_up_fasta.py {sample_contig_filter} -c 10000 -o 0 --merge_last -b {sample_contigs_10K.bed} > {smaple_contigs_10K.fa}
+concoct_coverage_table.py {sample_contigs_10K.bed} {sample.bam} > {sample_coverage_table.tsv}
+concoct -t 8 --composition_file {sample_contigs_10K.fa} --coverage_file {sample_coverage_table.tsv} -b {sample_concoct_output}
+merge_cutup_clustering.py {sample_clustering_gt1000.csv} > {sample_clustering_merged.csv}
+extract_fasta_bins.py {sample_contig_filter} {sample_clustering_merged.csv} --output_path {fasta_bins}
+```
+
+#### maxbin2 (maxbin2 v2.2.7)
+```
+pileup.sh in={sample.sam} out={sample_cov.txt}
+rm {sample.sam}
+awk '{print $1"\t"$2}' {sample_cov.txt} | grep -v '^#' > {sample_abundance.txt}
+run_MaxBin.pl -thread 8 -contig {sample_contig_filter} -out {sample_maxbin2_out} -abund {sample_abundance.txt}
+```
+
+#### metabat2 (metabat2 v2.15)
+```
+jgi_summarize_bam_contig_depths {sample.bam} --outputDepth {sample.depth}
+metabat2 -i {sample_contig_filter} -a {sample.depth} -o {sample.binning} -m 1500 -t 8 > {sample_binning_metabat2.log}
+```
+
+#### MAGScoT (MAGScoT v1.0.0)
+```
+prodigal {sample_contig_filter} -p meta -a {sample.prodigal.faa} -d {sample.prodigal.ffn} -o {sample_tmpfile}
+hmmsearch -o {sample.hmm.tigr.out} --tblout {sample.hmm.tigr.hit.out} --noali --notextw --cut_nc --cpu 8 gtdbtk_rel214_tigrfam.hmm {sample.prodigal.faa}
+hmmsearch -o {sample.hmm.pfam.out} --tblout {sample.hmm.pfam.hit.out} --noali --notextw --cut_nc --cpu 8 gtdbtk_rel214_Pfam-A.hmm {sample.prodigal.faa}
+cat {sample.hmm.tigr.hit.out} | grep -v "^#" | awk '{print $1"\t"$3"\t"$5}' > {sample.tigr}
+cat {sample.hmm.pfam.hit.out} | grep -v "^#" | awk '{print $1"\t"$4"\t"$5}' > {sample.pfam}
+cat {sample.pfam} {sample.tigr} > {sample.hmm}
+sh Fasta_to_Contig2Bin.sh -i {sample_maxbin2_bins} -e fasta > {sample.maxbin2.contigs2bin.tsv}
+sh Fasta_to_Contig2Bin.sh -i {sample_metabat2_bins} -e fa > {sample.metabat2.contigs2bin.tsv}
+sh Fasta_to_Contig2Bin.sh -i {sample_concoct_bins} -e fa > {sample.concoct.contigs2bin.tsv}
+awk '{print $2"\t"$1"\tmaxbin2"}'  {sample.maxbin2.contigs2bin.tsv} >> {sample.contigs_to_bin.tsv}
+awk '{print $2"\t"$1"\tmetabat2"}'  {sample.metabat2.contigs2bin.tsv} >> {sample.contigs_to_bin.tsv}
+awk '{print $2"\t"$1"\tconcoct"}'  {sample.concoct.contigs2bin.tsv} >> {sample.contigs_to_bin.tsv}
+Rscript MAGScoT.R -i {sample.contigs_to_bin.tsv} --hmm {sample.hmm} -o {sample.MAGScoT}
+```
 
 ## 2. Genome de-redundancy (https://github.com/QTP-team/dRep)
 
