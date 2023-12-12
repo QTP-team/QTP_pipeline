@@ -32,7 +32,7 @@ jgi_summarize_bam_contig_depths {sample.bam} --outputDepth {sample.depth}
 metabat2 -i {sample_contig_filter} -a {sample.depth} -o {sample.binning} -m 1500 -t 8 > {sample_binning_metabat2.log}
 ```
 
-### 1.5MAGScoT (MAGScoT v1.0.0)
+### 1.5 MAGScoT (MAGScoT v1.0.0)
 ```
 prodigal {sample_contig_filter} -p meta -a {sample.prodigal.faa} -d {sample.prodigal.ffn} -o {sample_tmpfile}
 hmmsearch -o {sample.hmm.tigr.out} --tblout {sample.hmm.tigr.hit.out} --noali --notextw --cut_nc --cpu 8 gtdbtk_rel214_tigrfam.hmm {sample.prodigal.faa}
