@@ -1,7 +1,6 @@
 # QTP pipeline
 ## 1. Assemble
-### MAGScoT
-#### bowtie2 (bowtie2 v2.5.1)
+### 1.1 bowtie2 (bowtie2 v2.5.1)
 ```
 seqkit seq -m 1500 {sample_contig} > {sample_contig_filter}
 bowtie2-build {sample_contig_filter} {sample_contig_index} 1> {sample_bowtie2_index.log}
@@ -10,7 +9,7 @@ samtools sort -@ 8 {sample.sam} -O BAM > {sample.bam}
 samtools index {sample.bam} {smaple.bam.bai}
 ```
 
-#### concoct (concoct v1.1.0) 
+### 1.2 concoct (concoct v1.1.0) 
 ```
 cut_up_fasta.py {sample_contig_filter} -c 10000 -o 0 --merge_last -b {sample_contigs_10K.bed} > {smaple_contigs_10K.fa}
 concoct_coverage_table.py {sample_contigs_10K.bed} {sample.bam} > {sample_coverage_table.tsv}
@@ -19,7 +18,7 @@ merge_cutup_clustering.py {sample_clustering_gt1000.csv} > {sample_clustering_me
 extract_fasta_bins.py {sample_contig_filter} {sample_clustering_merged.csv} --output_path {fasta_bins}
 ```
 
-#### maxbin2 (maxbin2 v2.2.7)
+### 1.3 maxbin2 (maxbin2 v2.2.7)
 ```
 pileup.sh in={sample.sam} out={sample_cov.txt}
 rm {sample.sam}
@@ -27,13 +26,13 @@ awk '{print $1"\t"$2}' {sample_cov.txt} | grep -v '^#' > {sample_abundance.txt}
 run_MaxBin.pl -thread 8 -contig {sample_contig_filter} -out {sample_maxbin2_out} -abund {sample_abundance.txt}
 ```
 
-#### metabat2 (metabat2 v2.15)
+### 1.4 metabat2 (metabat2 v2.15)
 ```
 jgi_summarize_bam_contig_depths {sample.bam} --outputDepth {sample.depth}
 metabat2 -i {sample_contig_filter} -a {sample.depth} -o {sample.binning} -m 1500 -t 8 > {sample_binning_metabat2.log}
 ```
 
-#### MAGScoT (MAGScoT v1.0.0)
+### 1.5MAGScoT (MAGScoT v1.0.0)
 ```
 prodigal {sample_contig_filter} -p meta -a {sample.prodigal.faa} -d {sample.prodigal.ffn} -o {sample_tmpfile}
 hmmsearch -o {sample.hmm.tigr.out} --tblout {sample.hmm.tigr.hit.out} --noali --notextw --cut_nc --cpu 8 gtdbtk_rel214_tigrfam.hmm {sample.prodigal.faa}
