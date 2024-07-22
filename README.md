@@ -79,7 +79,7 @@ prodigal -c -m -p single -i genome.fa -a gene.faa > /dev/null
 
 ### 7.2 Gene de-redundancy
 ```
-sh script/mmseq2_clust.sh library_ID input.fasta 0.9 output_dir 32 > log
+sh script/mmseq2_clust.sh library_ID input.fasta 0.95 output_dir 32 > log
 ```
 
 ## 8. Calculate pN/pS
